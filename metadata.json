@@ -1,0 +1,8 @@
+{
+  "name": "SahaRapor - Problem İş Bildirim Sistemi",
+  "description": "Saha ekiplerinin hizmet numarası, saha, kutu ve sorun tipi bilgilerini girerek sorunlu iş bildirimi yapabildiği, PIN kodlu güvenlik girişine sahip profesyonel bir web platformu.",
+  "requestFramePermissions": [
+    "geolocation",
+    "camera"
+  ]
+}
