@@ -2,14 +2,16 @@
 import React, { useState, useEffect } from 'react';
 import { PINEntry } from './components/PINEntry';
 import { Dashboard } from './components/Dashboard';
+import { ManagerDashboard } from './components/ManagerDashboard';
 import { AppState, Report, ImprovementReport, ModemSetupReport, DamageReport, JobCompletionReport, VehicleLog, PortChangeReport, InventoryLog } from './types';
-import { HardHat } from 'lucide-react';
+import { HardHat, ShieldCheck } from 'lucide-react';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(() => {
-    const saved = localStorage.getItem('saharapor_state_v9');
+    const saved = localStorage.getItem('atssaha_state_v15');
     return saved ? JSON.parse(saved) : {
       isLoggedIn: false,
+      isAdmin: false,
       ekipKodu: '',
       reports: [],
       improvementReports: [],
@@ -24,13 +26,14 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
-    localStorage.setItem('saharapor_state_v9', JSON.stringify(state));
+    localStorage.setItem('atssaha_state_v15', JSON.stringify(state));
   }, [state]);
 
-  const handleLogin = (pin: string) => {
+  const handleLogin = (pin: string, isAdmin: boolean) => {
     setState(prev => ({
       ...prev,
       isLoggedIn: true,
+      isAdmin: isAdmin,
       ekipKodu: pin
     }));
   };
@@ -39,6 +42,7 @@ const App: React.FC = () => {
     setState(prev => ({
       ...prev,
       isLoggedIn: false,
+      isAdmin: false,
       ekipKodu: ''
     }));
   };
@@ -81,22 +85,22 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
-      <header className="bg-slate-900 text-white p-4 shadow-md sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
+      <header className={`p-4 shadow-md sticky top-0 z-50 text-white ${state.isAdmin ? 'bg-indigo-900' : 'bg-slate-900'}`}>
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-500 p-2 rounded-lg">
-              <HardHat size={24} />
+            <div className={`${state.isAdmin ? 'bg-indigo-500' : 'bg-orange-500'} p-2 rounded-lg`}>
+              {state.isAdmin ? <ShieldCheck size={24} /> : <HardHat size={24} />}
             </div>
-            <h1 className="text-xl font-bold tracking-tight">SahaRapor</h1>
+            <div>
+              <h1 className="text-xl font-black tracking-tight uppercase">ATS SAHA</h1>
+              {state.isAdmin && <span className="text-[10px] font-black tracking-widest text-indigo-300">ADMIN CONTROL PANEL</span>}
+            </div>
           </div>
           {state.isLoggedIn && (
             <div className="flex items-center gap-4">
-              <span className="text-sm font-medium text-slate-400 hidden sm:inline">
-                Ekip: <span className="text-white font-mono">{state.ekipKodu}</span>
-              </span>
               <button 
                 onClick={handleLogout}
-                className="text-sm bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-md transition-colors font-bold"
+                className="text-sm bg-black/20 hover:bg-black/40 px-3 py-1.5 rounded-md transition-colors font-bold border border-white/10"
               >
                 Çıkış
               </button>
@@ -105,9 +109,11 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-1 max-w-4xl w-full mx-auto p-4">
+      <main className="flex-1 max-w-6xl w-full mx-auto p-4">
         {!state.isLoggedIn ? (
           <PINEntry onLogin={handleLogin} />
+        ) : state.isAdmin ? (
+          <ManagerDashboard sheetUrl={state.sheetUrl} onUpdateUrl={updateSheetUrl} onLogout={handleLogout} />
         ) : (
           <Dashboard 
             {...state}
@@ -124,8 +130,8 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="bg-white border-t p-4 text-center text-slate-500 text-[10px] font-bold uppercase tracking-widest">
-        &copy; {new Date().getFullYear()} SahaRapor - Türk Telekom Saha Operasyonları
+      <footer className="bg-white border-t p-4 text-center text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-loose">
+        &copy; 2026 ATS SAHA - ATS SAHA HİZMETLERİ PORTALI
       </footer>
     </div>
   );

@@ -145,6 +145,7 @@ export const ModemTipleri = ['FIBER (GPON)', 'VDSL', 'ADSL', 'HGW', 'DIGER'];
 
 export interface AppState {
   isLoggedIn: boolean;
+  isAdmin: boolean;
   ekipKodu: string;
   reports: Report[];
   improvementReports: ImprovementReport[];

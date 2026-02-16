@@ -1,5 +1,5 @@
 {
-  "name": "saharapor---problem-i̇ş-bildirim-sistemi",
+  "name": "ats-saha---saha-operasyon-portalı",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -12,7 +12,8 @@
     "@google/genai": "^1.40.0",
     "lucide-react": "^0.563.0",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "html5-qrcode": "latest"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

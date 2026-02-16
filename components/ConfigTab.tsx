@@ -13,14 +13,34 @@ export const ConfigTab: React.FC<ConfigTabProps> = ({ sheetUrl, onUpdate }) => {
   const [copied, setCopied] = useState(false);
 
   const scriptCode = `/**
- * SahaRapor v13 - Ultra Güvenli & Modüler Kayıt Sistemi
- * DRIVE HATALARINA KARŞI KORUMALI - VERİYİ HER ŞEKİLDE YAZAR.
+ * SahaRapor v14 - Yönetici Paneli Destekli Sistem
+ * BU SCRIPT HEM VERİ YAZAR (doPost) HEM VERİ OKUR (doGet)
  */
 
-// Bu fonksiyonu script editöründe BİR KEZ çalıştırarak Drive izni verebilirsiniz.
-function authHelper() {
-  DriveApp.getRootFolder();
-  console.log("Drive izni tetiklendi.");
+// Veri Çekme Fonksiyonu (Yönetici Paneli İçin)
+function doGet(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheets = ss.getSheets();
+  const result = {};
+
+  sheets.forEach(sheet => {
+    const name = sheet.getName();
+    const data = sheet.getDataRange().getValues();
+    if (data.length > 1) {
+      const headers = data[0];
+      const rows = data.slice(1).map(row => {
+        const obj = {};
+        headers.forEach((h, i) => obj[h] = row[i]);
+        return obj;
+      });
+      result[name] = rows;
+    } else {
+      result[name] = [];
+    }
+  });
+
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
@@ -31,7 +51,6 @@ function doPost(e) {
     const data = JSON.parse(e.postData.contents);
     const reportType = data.reportType || 'generic';
     
-    // 1. Modüle göre sayfa ve başlık belirle
     let sheetName = "Kayıtlar";
     let headers = ["Zaman Damgası", "Ekip"];
 
@@ -70,7 +89,6 @@ function doPost(e) {
         break;
     }
 
-    // 2. Sayfayı bul veya oluştur
     let sheet = ss.getSheetByName(sheetName);
     if (!sheet) {
       sheet = ss.insertSheet(sheetName);
@@ -83,7 +101,6 @@ function doPost(e) {
     const timestamp = Utilities.formatDate(now, "GMT+3", "dd.MM.yyyy HH:mm:ss");
     const locationStr = data.location ? (data.location.lat + "," + data.location.lng) : "-";
     
-    // 3. Fotoğraf İşleme (DRIVE İZNİ YOKSA BASE64 OLARAK YAZ)
     let photoData = "";
     if (data.photo && data.photo.includes("base64")) {
       try {
@@ -96,12 +113,10 @@ function doPost(e) {
         file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
         photoData = '=IMAGE("https://drive.google.com/uc?export=view&id=' + file.getId() + '")';
       } catch (e) {
-        // DRIVE İZNİ YOKSA: Veriyi hücreye sığacak kadar (max 32k) metin olarak yaz
         photoData = "DRIVE_IZIN_YOK_VERI: " + data.photo.substring(0, 30000);
       }
     }
 
-    // 4. Satır Verisi Oluştur
     let row = [timestamp, data.ekipKodu || "-"];
     
     if (reportType === 'problem') {
@@ -123,11 +138,7 @@ function doPost(e) {
     }
 
     sheet.appendRow(row);
-    
-    // Resim varsa satırı büyüt (Eğer Drive üzerinden gelmişse)
-    if (photoData.startsWith("=")) {
-      sheet.setRowHeight(sheet.getLastRow(), 100);
-    }
+    if (photoData.startsWith("=")) sheet.setRowHeight(sheet.getLastRow(), 100);
 
     return ContentService.createTextOutput("Başarılı").setMimeType(ContentService.MimeType.TEXT);
   } catch (err) {
@@ -155,8 +166,8 @@ function doPost(e) {
           <h3 className="font-black text-sm uppercase tracking-widest">SİSTEM AYARLARI</h3>
         </div>
         <div className="flex gap-2">
-          <span className="text-[9px] bg-red-500/20 px-2 py-1 rounded text-red-400 font-bold border border-red-500/30">DRIVE FIX</span>
-          <span className="text-[9px] bg-blue-500/20 px-2 py-1 rounded text-blue-400 font-bold border border-blue-500/30">V13 STABLE</span>
+          <span className="text-[9px] bg-indigo-500/20 px-2 py-1 rounded text-indigo-400 font-bold border border-indigo-500/30">ADMIN DASHBOARD SUPPORT</span>
+          <span className="text-[9px] bg-blue-500/20 px-2 py-1 rounded text-blue-400 font-bold border border-blue-500/30">V14 STABLE</span>
         </div>
       </div>
 
@@ -177,26 +188,22 @@ function doPost(e) {
           </div>
         </div>
 
-        <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 space-y-3">
+        <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-200 space-y-3">
            <div className="flex gap-3">
-              <ShieldCheck className="text-amber-600 shrink-0" size={20} />
+              <RefreshCw className="text-indigo-600 shrink-0" size={20} />
               <div className="space-y-1">
-                <p className="text-[10px] font-black text-amber-800 uppercase">Resim ve Yazma Sorunu Çözüldü</p>
-                <p className="text-[10px] text-amber-700 font-bold leading-relaxed uppercase">
-                  Yeni v13 kodu, Drive izniniz olmasa bile verileri satıra yazmaya devam eder. Fotoğrafı Base64 olarak saklamaya çalışır.
+                <p className="text-[10px] font-black text-indigo-800 uppercase">Yönetici Paneli İçin Güncelleme Şart</p>
+                <p className="text-[10px] text-indigo-700 font-bold leading-relaxed uppercase">
+                  Yeni v14 kodu, uygulamanın verileri Google Sheets'ten geri okumasını sağlar. <b>doGet</b> fonksiyonu eklenmiştir.
                 </p>
               </div>
-           </div>
-           <div className="bg-white/50 p-3 rounded-lg border border-amber-100 flex items-center gap-2">
-              <ImageIcon size={14} className="text-amber-600" />
-              <p className="text-[9px] text-amber-800 font-bold uppercase">Hata Alıyorsanız: Script sayfasında <b>"authHelper"</b> fonksiyonunu bir kez "Çalıştır" yapın.</p>
            </div>
         </div>
 
         <div className="space-y-2">
            <div className="flex justify-between items-center">
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight flex items-center gap-2">
-                <FileCode size={14} /> v13 Google Apps Script Kodu
+                <FileCode size={14} /> v14 Google Apps Script Kodu
               </span>
               <button onClick={copyCode} className="text-[10px] bg-slate-100 px-3 py-1.5 rounded-full font-black uppercase tracking-tighter flex items-center gap-1">
                 {copied ? <Check size={12}/> : <Copy size={12}/>}

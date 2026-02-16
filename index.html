@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SahaRapor | İş Bildirim Formu</title>
+    <title>ATS SAHA | Saha Operasyon Portalı</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,13 +14,55 @@
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
+        @keyframes scanLine {
+            0% { top: 15%; }
+            50% { top: 85%; }
+            100% { top: 15%; }
         }
-        .animate-shake {
-          animation: shake 0.2s ease-in-out 0s 2;
+        .scanner-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .scanner-line {
+            position: absolute;
+            width: 80%;
+            height: 2px;
+            background: #ff0000;
+            box-shadow: 0 0 12px 3px rgba(255, 0, 0, 0.7);
+            left: 10%;
+            animation: scanLine 2s infinite ease-in-out;
+            z-index: 51;
+        }
+        #qr-reader {
+            border: none !important;
+            padding: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: #000;
+        }
+        /* Video elementini görünür kılmak için kritik ayarlar */
+        #qr-reader video {
+            object-fit: cover !important;
+            width: 100% !important;
+            height: 100% !important;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        #qr-reader__scan_region {
+            width: 100% !important;
+            height: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        #qr-reader__dashboard {
+            display: none !important;
         }
     </style>
 <script type="importmap">
@@ -30,7 +72,8 @@
     "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
     "react/": "https://esm.sh/react@^19.2.4/",
     "react": "https://esm.sh/react@^19.2.4",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "html5-qrcode": "https://esm.sh/html5-qrcode"
   }
 }
 </script>
