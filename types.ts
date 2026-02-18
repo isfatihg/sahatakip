@@ -17,6 +17,16 @@ export interface Report {
   reportType: 'problem';
 }
 
+export interface Announcement {
+  id: string;
+  timestamp: string;
+  targetTeam: string;
+  title: string;
+  message: string;
+  sender: string;
+  reportType: 'announcement';
+}
+
 export interface ImprovementReport {
   id: string;
   yerlesimAdi: string;
@@ -155,5 +165,6 @@ export interface AppState {
   vehicleLogs: VehicleLog[];
   portChanges: PortChangeReport[];
   inventoryLogs: InventoryLog[];
+  announcements: Announcement[];
   sheetUrl?: string;
 }

@@ -13,11 +13,9 @@ export const ConfigTab: React.FC<ConfigTabProps> = ({ sheetUrl, onUpdate }) => {
   const [copied, setCopied] = useState(false);
 
   const scriptCode = `/**
- * SahaRapor v14 - Yönetici Paneli Destekli Sistem
- * BU SCRIPT HEM VERİ YAZAR (doPost) HEM VERİ OKUR (doGet)
+ * SahaRapor v15 - Duyuru Sistemi Destekli
  */
 
-// Veri Çekme Fonksiyonu (Yönetici Paneli İçin)
 function doGet(e) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
@@ -58,6 +56,10 @@ function doPost(e) {
       case 'problem': 
         sheetName = "Sorunlar"; 
         headers = ["Zaman Damgası", "Ekip", "Hizmet No", "Saha", "Kutu", "Sorun", "Açıklama", "Konum", "Foto"]; 
+        break;
+      case 'announcement':
+        sheetName = "Duyurular";
+        headers = ["Zaman Damgası", "Yönetici", "Hedef Ekip", "Başlık", "Mesaj"];
         break;
       case 'damage_report': 
         sheetName = "Hasar Tespitleri"; 
@@ -113,28 +115,33 @@ function doPost(e) {
         file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
         photoData = '=IMAGE("https://drive.google.com/uc?export=view&id=' + file.getId() + '")';
       } catch (e) {
-        photoData = "DRIVE_IZIN_YOK_VERI: " + data.photo.substring(0, 30000);
+        photoData = "HATA";
       }
     }
 
-    let row = [timestamp, data.ekipKodu || "-"];
+    let row = [timestamp];
     
-    if (reportType === 'problem') {
-      row.push(data.hizmetNo, data.saha, data.kutu, data.sorunTipi, data.aciklama, locationStr, photoData);
-    } else if (reportType === 'damage_report') {
-      row.push(data.projeId, data.hasarYapanAdSoyad, data.tcKimlik + "/" + data.vergiNo, data.telNo, data.hasarYapanAdres, data.hasarTarihi + " " + data.hasarSaati, data.hasarYeri, data.hasarOlusSekli, data.tesisCinsiMiktari, data.etkilenenAboneSayisi, data.duzenleyenPersonel, data.duzenleyenUnvan, data.tanikBilgileri, data.guvenlikGorevlisi, data.ihbarEden, data.kullanilanMalzemeler, locationStr, photoData);
-    } else if (reportType === 'inventory') {
-      row.push(data.actionType, data.serialNumber, data.hizmetNo || "-", data.deviceType);
-    } else if (reportType === 'job_completion') {
-      row.push(data.hizmetNo, data.isTipi, data.isAdedi);
-    } else if (reportType === 'vehicle_log') {
-      row.push(data.plaka, data.kilometre);
-    } else if (reportType === 'modem_setup') {
-      row.push(data.hizmetNo, data.modemTipi, data.aciklama);
-    } else if (reportType === 'port_change') {
-      row.push(data.hizmetNo, data.yeniPort, data.yeniDevre, data.aciklama);
-    } else if (reportType === 'improvement') {
-      row.push(data.yerlesimAdi, data.bakimTarihi, data.kabloDurumu, data.menholDurumu, data.direkDurumu, data.direkDonanimDurumu, data.kutuKabinDurumu, data.takdirPuani, locationStr, photoData);
+    if (reportType === 'announcement') {
+      row.push(data.sender || "Yönetici", data.targetTeam, data.title, data.message);
+    } else {
+      row.push(data.ekipKodu || "-");
+      if (reportType === 'problem') {
+        row.push(data.hizmetNo, data.saha, data.kutu, data.sorunTipi, data.aciklama, locationStr, photoData);
+      } else if (reportType === 'damage_report') {
+        row.push(data.projeId, data.hasarYapanAdSoyad, data.tcKimlik + "/" + data.vergiNo, data.telNo, data.hasarYapanAdres, data.hasarTarihi + " " + data.hasarSaati, data.hasarYeri, data.hasarOlusSekli, data.tesisCinsiMiktari, data.etkilenenAboneSayisi, data.duzenleyenPersonel, data.duzenleyenUnvan, data.tanikBilgileri, data.guvenlikGorevlisi, data.ihbarEden, data.kullanilanMalzemeler, locationStr, photoData);
+      } else if (reportType === 'inventory') {
+        row.push(data.actionType, data.serialNumber, data.hizmetNo || "-", data.deviceType);
+      } else if (reportType === 'job_completion') {
+        row.push(data.hizmetNo, data.isTipi, data.isAdedi);
+      } else if (reportType === 'vehicle_log') {
+        row.push(data.plaka, data.kilometre);
+      } else if (reportType === 'modem_setup') {
+        row.push(data.hizmetNo, data.modemTipi, data.aciklama);
+      } else if (reportType === 'port_change') {
+        row.push(data.hizmetNo, data.yeniPort, data.yeniDevre, data.aciklama);
+      } else if (reportType === 'improvement') {
+        row.push(data.yerlesimAdi, data.bakimTarihi, data.kabloDurumu, data.menholDurumu, data.direkDurumu, data.direkDonanimDurumu, data.kutuKabinDurumu, data.takdirPuani, locationStr, photoData);
+      }
     }
 
     sheet.appendRow(row);
@@ -166,8 +173,8 @@ function doPost(e) {
           <h3 className="font-black text-sm uppercase tracking-widest">SİSTEM AYARLARI</h3>
         </div>
         <div className="flex gap-2">
-          <span className="text-[9px] bg-indigo-500/20 px-2 py-1 rounded text-indigo-400 font-bold border border-indigo-500/30">ADMIN DASHBOARD SUPPORT</span>
-          <span className="text-[9px] bg-blue-500/20 px-2 py-1 rounded text-blue-400 font-bold border border-blue-500/30">V14 STABLE</span>
+          <span className="text-[9px] bg-indigo-500/20 px-2 py-1 rounded text-indigo-400 font-bold border border-indigo-500/30">NOTIFICATION SUPPORT</span>
+          <span className="text-[9px] bg-blue-500/20 px-2 py-1 rounded text-blue-400 font-bold border border-blue-500/30">V15 STABLE</span>
         </div>
       </div>
 
@@ -192,9 +199,9 @@ function doPost(e) {
            <div className="flex gap-3">
               <RefreshCw className="text-indigo-600 shrink-0" size={20} />
               <div className="space-y-1">
-                <p className="text-[10px] font-black text-indigo-800 uppercase">Yönetici Paneli İçin Güncelleme Şart</p>
+                <p className="text-[10px] font-black text-indigo-800 uppercase">Duyuru Sistemi İçin Güncelleme Şart</p>
                 <p className="text-[10px] text-indigo-700 font-bold leading-relaxed uppercase">
-                  Yeni v14 kodu, uygulamanın verileri Google Sheets'ten geri okumasını sağlar. <b>doGet</b> fonksiyonu eklenmiştir.
+                  Yeni v15 kodu, yönetici duyurularını "Duyurular" sekmesine kaydetmenizi sağlar.
                 </p>
               </div>
            </div>
@@ -203,7 +210,7 @@ function doPost(e) {
         <div className="space-y-2">
            <div className="flex justify-between items-center">
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight flex items-center gap-2">
-                <FileCode size={14} /> v14 Google Apps Script Kodu
+                <FileCode size={14} /> v15 Google Apps Script Kodu
               </span>
               <button onClick={copyCode} className="text-[10px] bg-slate-100 px-3 py-1.5 rounded-full font-black uppercase tracking-tighter flex items-center gap-1">
                 {copied ? <Check size={12}/> : <Copy size={12}/>}
